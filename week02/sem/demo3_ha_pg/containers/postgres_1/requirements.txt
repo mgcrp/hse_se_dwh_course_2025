@@ -1,0 +1,15 @@
+psutil 
+patroni[etcd] 
+python-consul 
+dnspython 
+boto 
+mock 
+requests 
+six 
+kazoo 
+click 
+tzlocal 
+prettytable 
+PyYAML
+psycopg
+patroni

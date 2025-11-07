@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  postgres_master:
+    container_name: postgres_master
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    command: ["postgres", "-c", "wal_level=logical"]
+
+  postgres_replica:
+    container_name: postgres_replica
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

@@ -1,0 +1,108 @@
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: etcd
+    command: >
+      /usr/local/bin/etcd
+      --name node1
+      --data-dir /etcd-data
+      --listen-client-urls http://0.0.0.0:2379
+      --advertise-client-urls http://etcd:2379
+      --listen-peer-urls http://0.0.0.0:2380
+      --initial-advertise-peer-urls http://etcd:2380
+      --initial-cluster node1=http://etcd:2380
+      --initial-cluster-state new
+      --enable-v2=true
+    networks:
+      baza:
+        ipv4_address: 10.5.0.2
+    ports:
+      - "2379:2379"
+
+  pg-patroni-1:
+    build:
+      context: ./containers/postgres_1
+      dockerfile: Dockerfile
+    container_name: pg-patroni-1
+    hostname: pg-patroni-1
+    expose:
+      - "8008"
+      - "5432"
+    ports:
+      - "5432:5432"
+      - "8008:8008"
+    user: postgres
+    environment:
+      PATRONI_NAME: pg-patroni-1
+      PATRONI_POSTGRESQL_DATA_DIR: /var/lib/postgresql/data
+      PATRONI_ETCD_HOST: "etcd:2379"
+    networks:
+      baza:
+        ipv4_address: 10.5.0.5
+    restart: unless-stopped
+
+  pg-patroni-2:
+    build:
+      context: ./containers/postgres_2
+      dockerfile: Dockerfile
+    container_name: pg-patroni-2
+    hostname: pg-patroni-2
+    expose:
+      - "8008"
+      - "5432"
+    ports:
+      - "5433:5432"
+      - "8009:8008"
+    user: postgres
+    environment:
+      PATRONI_NAME: pg-patroni-2
+      PATRONI_POSTGRESQL_DATA_DIR: /var/lib/postgresql/data
+      PATRONI_ETCD_HOST: "etcd:2379"
+    networks:
+      baza:
+        ipv4_address: 10.5.0.6
+    restart: unless-stopped
+
+  pg-patroni-3:
+    build:
+      context: ./containers/postgres_2
+      dockerfile: Dockerfile
+    container_name: pg-patroni-3
+    hostname: pg-patroni-3
+    expose:
+      - "8008"
+      - "5432"
+    ports:
+      - "5434:5432"
+      - "8010:8008"
+    user: postgres
+    environment:
+      PATRONI_NAME: pg-patroni-3
+      PATRONI_POSTGRESQL_DATA_DIR: /var/lib/postgresql/data
+      PATRONI_ETCD_HOST: "etcd:2379"
+    networks:
+      baza:
+        ipv4_address: 10.5.0.7
+    restart: unless-stopped
+
+  haproxy:
+    depends_on:
+      - etcd
+    image: haproxy:alpine3.17
+    container_name: haproxy
+    ports:
+      - "7001:7000"
+      - "5001:5000"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      baza:
+        ipv4_address: 10.5.0.9
+
+networks:
+  baza:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1

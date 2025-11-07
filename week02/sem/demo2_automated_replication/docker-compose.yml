@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  postgres_master:
+    container_name: postgres_master
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./data-replica:/var/lib/postgresql/data-replica
+      - ./init-script/common-config/postgres.conf:/etc/postgresql/postgresql.conf
+      - ./init-script/common-config/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./init-script:/etc/postgresql/init-script
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  postgres_replica:
+    container_name: postgres_replica
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./data-replica:/var/lib/postgresql/data
+      - ./init-script/common-config/postgres.conf:/etc/postgresql/postgresql.conf
+      - ./init-script/common-config/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
