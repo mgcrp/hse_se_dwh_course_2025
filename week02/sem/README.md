@@ -201,6 +201,10 @@ hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
 -input /data/text/* -output /data/text-output
 ```
 
+```
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming-3.2.2.jar -file mapper.py     -mapper mapper.py -file reducer.py    -reducer reducer.py -input /data/text/* -output /data/text-output
+```
+
 Ниже - примеры для yandex cloud dataproc
 
 1. `hdfs dfs -mkdir -p /data/sem_example`
