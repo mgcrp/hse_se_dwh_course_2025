@@ -117,7 +117,8 @@ select
   	when data_type in ('character', 'character varying')
     	then data_type || '(' || character_maximum_length::character varying(7) || ')'
     else data_type
-  end
+  end,
+  *
 from information_schema.columns
 where 1=1
 	and table_schema = 'public'
@@ -195,8 +196,8 @@ ORDER BY gp_segment_id;
 
 /* Посмотрим, как различаются AO column и AO row таблицы */
 
-drop table if exists seminar_demo.customer_AO_column;
-create table seminar_demo.customer_AO_column (
+drop table if exists seminar_demo.customer_ao_column;
+create table seminar_demo.customer_ao_column (
 	C_CUSTKEY INT, 
   C_NAME VARCHAR(25),
   C_ADDRESS VARCHAR(40),
@@ -209,11 +210,11 @@ create table seminar_demo.customer_AO_column (
 WITH (APPENDONLY=True, COMPRESSLEVEL=5, ORIENTATION=COLUMN, COMPRESSTYPE=zlib)
 DISTRIBUTED BY (C_CUSTKEY);
 
-insert into seminar_demo.customer_AO_column
+insert into seminar_demo.customer_ao_column
 select * from public.customer;
 
-drop table if exists seminar_demo.customer_AO_row;
-create table seminar_demo.customer_AO_row (
+drop table if exists seminar_demo.customer_ao_row;
+create table seminar_demo.customer_ao_row (
 	C_CUSTKEY INT, 
   C_NAME VARCHAR(25),
   C_ADDRESS VARCHAR(40),
@@ -226,7 +227,7 @@ create table seminar_demo.customer_AO_row (
 WITH (APPENDONLY=True, COMPRESSLEVEL=5, ORIENTATION=ROW, COMPRESSTYPE=zlib)
 DISTRIBUTED BY (C_CUSTKEY);
 
-insert into seminar_demo.customer_AO_row
+insert into seminar_demo.customer_ao_row
 select * from public.customer;
 
 select 
@@ -242,20 +243,22 @@ select
 from gp_toolkit.gp_size_of_table_disk
 where 1=1
 	and sotdschemaname = 'seminar_demo'
-    and sotdtablename in ('customer_AO_column', 'customer_AO_row')
+  and sotdtablename in ('customer_ao_column', 'customer_ao_row')
 order by sotdsize desc, sotdtoastsize desc;
 
 ---
 
 /* Способ, как можно посмотреть на занимаемое таблицей/партицией место */
 
-SELECT
-  sotdschemaname AS schemaname,
-  sotdtablename AS tablename,
-  SUM(sotdsize)/1024/1024/1024::NUMERIC(15,4) AS size_GB
+SELECT *
+  -- sotdschemaname AS schemaname,
+  -- sotdtablename AS tablename,
+  -- SUM(sotdsize)/1024/1024/1024::NUMERIC(15,4) AS size_GB
 FROM gp_toolkit.gp_size_of_table_disk
-GROUP BY sotdtablename, sotdschemaname
-ORDER BY 1;
+-- GROUP BY sotdtablename, sotdschemaname
+where 1=1
+  and sotdtablename like '%lineitem%'
+ORDER BY sotdtablename;
 
 ---
 
@@ -266,7 +269,7 @@ ORDER BY 1;
    Должны получиться 5 маленьких и одна большая партиция;
 */
 
-create table seminar_demo.customer_AO_column_partition (
+create table seminar_demo.customer_ao_column_partition (
 	C_CUSTKEY INT, 
   C_NAME VARCHAR(25),
   C_ADDRESS VARCHAR(40),
@@ -282,7 +285,7 @@ PARTITION BY RANGE (C_NATIONKEY)
 (START (1) END (5) EVERY (1),
  DEFAULT PARTITION NATION);
  
-insert into seminar_demo.customer_AO_column_partition
+insert into seminar_demo.customer_ao_column_partition
 select * from public.customer;
 
 SELECT
@@ -290,6 +293,8 @@ SELECT
   sotdtablename AS tablename,
   SUM(sotdsize)/1024/1024/1024::NUMERIC(15,4) AS size_GB
 FROM gp_toolkit.gp_size_of_table_disk
+where 1=1
+  and sotdtablename like '%customer_ao_column_partition%'
 GROUP BY sotdtablename, sotdschemaname
 ORDER BY 1;
 
@@ -300,15 +305,15 @@ ORDER BY 1;
    Если есть слово explain - покажутся план и кост, как его видит планировщик перед выполением запроса
 */
 
-explain select * from seminar_demo.customer_AO_column_partition;
-explain select * from seminar_demo.customer_AO_column_partition where C_NATIONKEY > 6;
+explain select * from seminar_demo.customer_ao_column_partition;
+explain select * from seminar_demo.customer_ao_column_partition where C_NATIONKEY > 6;
 
 /* Если добавить analyse - то запрос выполнится,
    а GP покажет фактические план и хост с худшей по перфу ноды
 */
 
-explain analyse select * from seminar_demo.customer_AO_column_partition;
-explain analyse select * from seminar_demo.customer_AO_column_partition where C_NATIONKEY > 6;
+explain analyse select * from seminar_demo.customer_ao_column_partition;
+explain analyse select * from seminar_demo.customer_ao_column_partition where C_NATIONKEY > 6;
 
 ---
 
@@ -326,14 +331,22 @@ inner join public.orders as o on 1=1
    без необходимости передачи данных по сети.
 */
 
+drop table if exists seminar_demo.customer_custkey;
 create table seminar_demo.customer_custkey as
 select *
 from public.customer
+/* Опицонально - добавляли чтобы проверить,
+    получится ли merge join */
+/* order by c_custkey */
 distributed by (c_custkey);
 
+drop table if exists seminar_demo.orders_custkey;
 create table seminar_demo.orders_custkey as
 select *
 from public.orders
+/* Опицонально - добавляли чтобы проверить,
+    получится ли merge join */
+/* order by o_custkey */
 distributed by (o_custkey);
 
 /* Посмотрите, как изменился план запроса.
@@ -374,15 +387,15 @@ inner join seminar_demo.orders_custkey as o on 1=1
 ---
 
 set optimizer=off;
-explain select * from seminar_demo.customer_AO_column_partition where C_NATIONKEY > 6;
+explain select * from seminar_demo.customer_ao_column_partition where C_NATIONKEY > 6;
 
 set optimizer=on;
-explain select * from seminar_demo.customer_AO_column_partition where C_NATIONKEY > 6;
+explain select * from seminar_demo.customer_ao_column_partition where C_NATIONKEY > 6;
 
 ---
 
 set optimizer=off;
-explain select * from seminar_demo.customer_AO_column_partition;
+explain select * from seminar_demo.customer_ao_column_partition;
 
 set optimizer=on;
-explain select * from seminar_demo.customer_AO_column_partition;
+explain select * from seminar_demo.customer_ao_column_partition;
