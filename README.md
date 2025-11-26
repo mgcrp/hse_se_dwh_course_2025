@@ -12,6 +12,22 @@ TBA
 O_{итоговая} = ¼ O_{ДЗ 1} + ¼ O_{ДЗ 2} + ¼ O_{ДЗ 3} + ¼ O_{ДЗ 4}
 ```
 
+[Слайды]()
+
+Фактические темы лекций и семинаров:
+| # | Дата       | Занятие | Тема | Материалы |
+| - | ---------- | ------- | ---- | --------- |
+| 1 | 20.09.2025 | Лекция  | Введение в Data Engineering                        | [Слайды](week01/week01_intro.pdf) |
+| 1 | 20.09.2025 | Семинар | Знакомство с PostgreSQL; Docker-compose;           | [План семинара](week01/sem/README.md) |
+| 2 | 11.10.2025 | Семинар | Репликация в PostgreSQL; HA-PG кластер;            | Репликация ([1](week02/sem/demo0_logical_replication), [2](week02/sem/demo1_manual_replication), [3](week02/sem/demo1_manual_replication)), [HA-кластер](week02/sem/demo3_ha_pg) |
+| 2 | 11.10.2025 | Семинар | Объектные хранилища; Minio                         | [Слайды](week02/week02_files.pdf), [План семинара](week02/sem/demo4_minio) |
+| 3 | 08.11.2025 | Лекция  | Hadoop-экосистема; HDFS; MapReduce; Spark;         | [Слайды](week02/week02_files.pdf) |
+| 3 | 08.11.2025 | Семинар | Hadoop-экосистема; HDFS; MapReduce; Spark;         | [План семинара](week02/sem/README.md) |
+| 4 | 15.11.2025 | Лекция  | Файловые и табличные форматы                       | [Слайды](week03/week03_file_formats.pdf) |
+| 4 | 15.11.2025 | Семинар | Практика: Avro, Parquet, Iceberg                   | [План семинара](week03/sem/README.md) |
+| 5 | 22.11.2025 | Лекция  | MPP; GreenPlum;                                    | [Слайды](week04/week04_dwh.pdf) |
+| 5 | 22.11.2025 | Семинар | Знакомство с GreenPlum;                            | [План семинара](week04/sem/demo1_gp/README.md) |
+
 Сроки домашнего задания:
 |        | Ссылка               | Дата Выдачи   | Дедлайн    |
 | ------ | -------------------- | ------------- | ---------- |
