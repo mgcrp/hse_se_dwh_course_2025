@@ -5,14 +5,12 @@
 https://t.me/+yOJ3DWtsPUZmYjhi
 
 Таблица с оценками:<br>
-TBA
+https://docs.google.com/spreadsheets/d/1ZQiEgShGKiwPtSyo3kIVFSRNLmskEon6ttcZTUH4j4E/edit?usp=sharing
 
 Формула оценивания:
 ```math
 O_{итоговая} = ¼ O_{ДЗ 1} + ¼ O_{ДЗ 2} + ¼ O_{ДЗ 3} + ¼ O_{ДЗ 4}
 ```
-
-[Слайды]()
 
 Фактические темы лекций и семинаров:
 | # | Дата       | Занятие | Тема | Материалы |
