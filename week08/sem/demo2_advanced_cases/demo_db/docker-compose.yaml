@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  postgres_primary:
+    container_name: postgres_primary
+    image: postgres:14
+    restart: always
+    volumes:
+      - ./db_data_example:/var/lib/postgresql/example_data
+      - ./data:/var/lib/postgresql/data
+      - ./data-secondary:/var/lib/postgresql/data-secondary
+#      - ./initialization/configs/primary-config:/etc/postgresql
+      - ./initialization:/etc/postgresql/initialization
+      - ./migrations:/docker-entrypoint-initdb.d
+      - ./entrypoints:/entrypoints
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+    # entrypoint: /entrypoints/primary-entrypoint.sh
+
+  postgres_secondary:
+    container_name: postgres_secondary
+    image: postgres:14
+    restart: always
+    volumes:
+      - ./data-secondary:/var/lib/postgresql/data
+#      - ./initialization/configs/secondary-config:/etc/postgresql
+      - ./initialization:/etc/postgresql/initialization
+      - ./entrypoints:/entrypoints
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - postgres_primary
+    # entrypoint: /entrypoints/secondary-entrypoint.sh
