@@ -1,2 +1,3 @@
 db_data_*
 *.zip
+live_dbt_demo/*
