@@ -30,11 +30,14 @@ with DAG("mgcrp_sample_dag",
          catchup=False,
          schedule_interval="*/5 * * * *",
          max_active_runs=1,
-         concurrency=1) as dag:
+         concurrency=2) as dag:
     
     a = DummyOperator(task_id="task_a", dag=dag)
     b = DummyOperator(task_id="task_b", dag=dag)
     d = PythonOperator(task_id="task_d", dag=dag, python_callable=run)
     c = DummyOperator(task_id="task_c", dag=dag)
 
-    [a, b, d] >> c
+    # [a, b, d] >> c
+    a >> c
+    b >> c
+    d >> c
